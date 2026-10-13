@@ -28,11 +28,10 @@ class TicketController extends Controller
         Gate::authorize('viewAny', Ticket::class);
 
         $user = $request->user();
-
         $query = Ticket::query()
             ->with(self::RELATIONS) // eager loading agar tidak kena N+1
+            ->visibleTo($request->user())
             ->filter($request->only(['status', 'priority', 'category_id', 'search']));
-
         if ($user->hasRole('admin')) {
             // admin melihat semua tiket
         } elseif ($user->hasRole('agent')) {
