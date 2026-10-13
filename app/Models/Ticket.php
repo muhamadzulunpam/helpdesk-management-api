@@ -92,4 +92,26 @@ class Ticket extends Model
                 });
             });
     }
+        /**
+     * Batasi query hanya ke tiket yang boleh dilihat oleh user ini.
+     */
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        $table = $query->getModel()->getTable();
+
+        if ($user->hasRole('admin')) {
+            return $query; // admin melihat semua tiket
+        }
+
+        if ($user->hasRole('agent')) {
+            // agent: tiket yang di-assign ke dia + tiket yang masih open
+            return $query->where(function ($q) use ($table, $user) {
+                $q->where("{$table}.assigned_to", $user->id)
+                    ->orWhere("{$table}.status", TicketStatus::Open->value);
+            });
+        }
+
+        // user biasa: hanya tiket miliknya
+        return $query->where("{$table}.created_by", $user->id);
+    }
 }

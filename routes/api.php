@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AttachmentController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CommentController;
+use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\TicketController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,5 +33,7 @@ Route::prefix('v1')->group(function () {
         Route::post('tickets/{ticket}/attachments', [AttachmentController::class, 'store']);
         Route::get('attachments/{attachment}/download', [AttachmentController::class, 'download']);
         Route::delete('attachments/{attachment}', [AttachmentController::class, 'destroy']);
+
+        Route::get('dashboard/stats', [DashboardController::class, 'stats']);
     });
 });
