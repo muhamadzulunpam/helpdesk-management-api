@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\TicketController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -17,5 +18,9 @@ Route::prefix('v1')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('categories', CategoryController::class)->except('show');
+
+        Route::apiResource('tickets', TicketController::class);
+        Route::patch('tickets/{ticket}/status', [TicketController::class, 'updateStatus']);
+        Route::patch('tickets/{ticket}/assign', [TicketController::class, 'assign']);
     });
 });
