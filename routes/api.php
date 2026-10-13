@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AttachmentController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CommentController;
@@ -26,5 +27,10 @@ Route::prefix('v1')->group(function () {
 
         Route::get('tickets/{ticket}/comments', [CommentController::class, 'index']);
         Route::post('tickets/{ticket}/comments', [CommentController::class, 'store']);
+
+        Route::get('tickets/{ticket}/attachments', [AttachmentController::class, 'index']);
+        Route::post('tickets/{ticket}/attachments', [AttachmentController::class, 'store']);
+        Route::get('attachments/{attachment}/download', [AttachmentController::class, 'download']);
+        Route::delete('attachments/{attachment}', [AttachmentController::class, 'destroy']);
     });
 });
