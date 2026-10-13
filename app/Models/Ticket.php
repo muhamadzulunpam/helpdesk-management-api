@@ -26,6 +26,11 @@ class Ticket extends Model
         'resolved_at',
     ];
 
+    protected $attributes = [
+        'status' => 'open',
+        'priority' => 'medium',
+    ];
+    
     protected $casts = [
         'status' => TicketStatus::class,
         'priority' => TicketPriority::class,
