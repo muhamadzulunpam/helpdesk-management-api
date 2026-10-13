@@ -27,4 +27,17 @@ enum TicketStatus: string
     {
         return in_array($next, $this->allowedTransitions(), true);
     }
+
+        /**
+     * Nama status yang ramah dibaca, dipakai di email.
+     */
+    public function label(): string
+    {
+        return match ($this) {
+            self::Open => 'Terbuka',
+            self::InProgress => 'Sedang diproses',
+            self::Resolved => 'Selesai ditangani',
+            self::Closed => 'Ditutup',
+        };
+    }
 }
