@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\CommentController;
 use App\Http\Controllers\Api\V1\TicketController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,5 +23,8 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('tickets', TicketController::class);
         Route::patch('tickets/{ticket}/status', [TicketController::class, 'updateStatus']);
         Route::patch('tickets/{ticket}/assign', [TicketController::class, 'assign']);
+
+        Route::get('tickets/{ticket}/comments', [CommentController::class, 'index']);
+        Route::post('tickets/{ticket}/comments', [CommentController::class, 'store']);
     });
 });
