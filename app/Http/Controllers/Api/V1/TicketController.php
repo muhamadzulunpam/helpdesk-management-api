@@ -18,6 +18,8 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
+use App\Notifications\TicketAssigned;
+use App\Notifications\TicketStatusChanged;
 
 class TicketController extends Controller
 {
@@ -128,6 +130,14 @@ class TicketController extends Controller
             ]);
         });
 
+        // Kabari pembuat tiket lewat email (diproses queue, tidak memperlambat request).
+        // Dipanggil setelah transaksi selesai, supaya data sudah tersimpan saat email diproses.
+        $creator = $ticket->creator;
+
+        if ($creator && ! $request->user()->is($creator)) {
+            $creator->notify(new TicketStatusChanged($ticket, $current, $next));
+        }
+
         return new TicketResource($ticket->load(self::RELATIONS));
     }
 
@@ -151,7 +161,15 @@ class TicketController extends Controller
             $assignee = $user;
         }
 
+        $previousAssignee = (int) $ticket->assigned_to;
+
         $ticket->update(['assigned_to' => $assignee->id]);
+
+        // Kabari agent yang baru ditugaskan, kecuali dia mengambilnya sendiri
+        // atau tiketnya sebenarnya sudah ditugaskan kepadanya.
+        if ($previousAssignee !== $assignee->id && ! $assignee->is($user)) {
+            $assignee->notify(new TicketAssigned($ticket, $user));
+        }
 
         return new TicketResource($ticket->load(self::RELATIONS));
     }

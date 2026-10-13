@@ -6,7 +6,10 @@ use App\Enums\TicketStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Comment\StoreCommentRequest;
 use App\Http\Resources\CommentResource;
+use App\Models\Comment;
 use App\Models\Ticket;
+use App\Models\User;
+use App\Notifications\TicketCommentAdded;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -47,8 +50,29 @@ class CommentController extends Controller
         // Perbarui waktu "terakhir diubah" tiket, supaya aktivitas terlihat
         $ticket->touch();
 
+        $this->notifyOtherParty($ticket, $comment, $request->user());
+
         return (new CommentResource($comment->load('user')))
             ->response()
             ->setStatusCode(201);
+    }
+
+    /**
+     * Kabari "pihak lain" lewat email:
+     * - penulisnya pembuat tiket  -> kabari agent yang menangani (kalau sudah ada)
+     * - penulisnya staf/lainnya   -> kabari pembuat tiket
+     */
+    private function notifyOtherParty(Ticket $ticket, Comment $comment, User $author): void
+    {
+        // Catatan internal tidak pernah dikirim lewat email, supaya tidak bocor ke pelanggan
+        if ($comment->is_internal) {
+            return;
+        }
+
+        $recipient = $author->is($ticket->creator) ? $ticket->assignee : $ticket->creator;
+
+        if ($recipient && ! $recipient->is($author)) {
+            $recipient->notify(new TicketCommentAdded($ticket, $comment, $author));
+        }
     }
 }
