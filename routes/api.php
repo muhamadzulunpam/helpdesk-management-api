@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CommentController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\TicketController;
+use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -35,5 +36,8 @@ Route::prefix('v1')->group(function () {
         Route::delete('attachments/{attachment}', [AttachmentController::class, 'destroy']);
 
         Route::get('dashboard/stats', [DashboardController::class, 'stats']);
+
+        Route::apiResource('users', UserController::class);
+        Route::patch('users/{user}/role', [UserController::class, 'updateRole']);
     });
 });
