@@ -1,58 +1,207 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Helpdesk API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+REST API sistem tiket bantuan (helpdesk) dengan tiga peran pengguna: **admin**, **agent**, dan **user**. Dibuat dengan Laravel, Sanctum, dan Pest.
 
-## About Laravel
+> Frontend: [helpdesk-web](https://github.com/muhamadzulunpam/helpdesk-web) (segera hadir) · Demo: _segera hadir_
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Fitur
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Autentikasi token (Laravel Sanctum) dengan pembatasan percobaan login
+- Role dan permission (spatie/laravel-permission): admin, agent, user
+- CRUD tiket dengan filter, pencarian, dan paginasi
+- Alur status tiket yang divalidasi beserta riwayat perubahan
+- Penugasan tiket ke agent
+- Komentar publik dan catatan internal (hanya terlihat staf)
+- Lampiran file di penyimpanan privat, dengan pengecekan hak akses saat diunduh
+- Statistik dashboard sesuai peran
+- Manajemen user (khusus admin) dengan pengaman: admin terakhir tidak bisa diturunkan, tidak bisa menghapus diri sendiri
+- Notifikasi email via queue (status berubah, tiket ditugaskan, komentar baru)
+- Test otomatis dengan Pest
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Teknologi
 
-## Learning Laravel
+Laravel · PHP 8.2+ · MySQL · Sanctum · spatie/laravel-permission · Pest
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Instalasi
 
 ```bash
-composer require laravel/boost --dev
+git clone https://github.com/USERNAME/helpdesk-api.git
+cd helpdesk-api
 
-php artisan boost:install
+composer install
+cp .env.example .env
+php artisan key:generate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Buat database kosong (misalnya `helpdesk`), lalu sesuaikan bagian `DB_*` di `.env`. Pastikan juga ada:
 
-## Contributing
+```
+QUEUE_CONNECTION=database
+MAIL_MAILER=log
+FRONTEND_URL=http://localhost:5173
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Lalu jalankan:
 
-## Code of Conduct
+```bash
+php artisan migrate --seed
+php artisan serve
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+API berjalan di `http://localhost:8000/api/v1`.
 
-## Security Vulnerabilities
+Untuk memproses email, jalankan di terminal lain:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+php artisan queue:work
+```
 
-## License
+Dengan `MAIL_MAILER=log`, email tidak benar-benar terkirim, tetapi ditulis ke `storage/logs/laravel.log`.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Akun demo
+
+| Peran | Email | Password |
+|---|---|---|
+| Admin | admin@demo.test | password |
+| Agent | agent@demo.test | password |
+| User | user@demo.test | password |
+
+## Dokumentasi API
+
+Semua endpoint berawalan `/api/v1`. Kirim header `Accept: application/json`, dan untuk endpoint bertanda 🔒 tambahkan `Authorization: Bearer <token>` (token didapat dari login).
+
+### Auth
+
+| Method | Endpoint | Isi | Keterangan |
+|---|---|---|---|
+| POST | `/auth/register` | `name, email, password, password_confirmation` | Daftar sebagai role user |
+| POST | `/auth/login` | `email, password` | Mengembalikan token (maks. 10x/menit) |
+| POST | `/auth/logout` 🔒 | - | Mencabut token saat ini |
+| GET | `/auth/me` 🔒 | - | Profil pengguna yang login |
+
+### Kategori 🔒
+
+| Method | Endpoint | Isi | Akses |
+|---|---|---|---|
+| GET | `/categories` | - | Semua pengguna login |
+| POST | `/categories` | `name` | Admin |
+| PUT | `/categories/{id}` | `name` | Admin |
+| DELETE | `/categories/{id}` | - | Admin (409 jika masih dipakai tiket) |
+
+### Tiket 🔒
+
+| Method | Endpoint | Isi / query | Keterangan |
+|---|---|---|---|
+| GET | `/tickets` | `status, priority, category_id, search, per_page, page` | Hanya tiket yang boleh dilihat perannya |
+| POST | `/tickets` | `title, description, category_id, priority` | Status awal `open` |
+| GET | `/tickets/{id}` | - | Detail tiket |
+| PUT | `/tickets/{id}` | field tiket | Ubah tiket |
+| DELETE | `/tickets/{id}` | - | Hapus tiket |
+| PATCH | `/tickets/{id}/status` | `status` | 422 jika perubahan status tidak diizinkan |
+| PATCH | `/tickets/{id}/assign` | `assigned_to` (admin) | Agent tanpa isi = mengambil untuk dirinya |
+
+Hak melihat tiket: admin semua; agent tiket yang ditugaskan kepadanya atau yang masih `open`; user hanya tiket miliknya.
+
+### Komentar 🔒
+
+| Method | Endpoint | Isi | Keterangan |
+|---|---|---|---|
+| GET | `/tickets/{id}/comments` | - | User tidak melihat catatan internal |
+| POST | `/tickets/{id}/comments` | `body, is_internal?` | 409 jika tiket `closed`; catatan internal hanya untuk agent/admin |
+
+### Lampiran 🔒
+
+| Method | Endpoint | Isi | Keterangan |
+|---|---|---|---|
+| GET | `/tickets/{id}/attachments` | - | Daftar lampiran |
+| POST | `/tickets/{id}/attachments` | form-data `file` | jpg, jpeg, png, pdf, txt, doc, docx; maks. 5 MB |
+| GET | `/attachments/{id}/download` | - | Unduh file |
+| DELETE | `/attachments/{id}` | - | Hapus lampiran |
+
+### Dashboard 🔒
+
+| Method | Endpoint | Keterangan |
+|---|---|---|
+| GET | `/dashboard/stats` | Statistik tiket sesuai peran |
+
+### User 🔒 (khusus admin)
+
+| Method | Endpoint | Isi / query | Keterangan |
+|---|---|---|---|
+| GET | `/users` | `role, search, per_page` | Daftar user |
+| POST | `/users` | `name, email, password, role` | `role`: admin, agent, user |
+| GET | `/users/{id}` | - | Detail user |
+| PUT | `/users/{id}` | `name?, email?, password?` | Ganti password mencabut token user itu |
+| PATCH | `/users/{id}/role` | `role` | 409 jika menurunkan admin terakhir |
+| DELETE | `/users/{id}` | - | 409 jika menghapus diri sendiri atau user yang punya aktivitas |
+
+### Kode respons
+
+| Kode | Arti |
+|---|---|
+| 200 / 201 / 204 | Berhasil / dibuat / tanpa isi |
+| 401 | Belum login atau token tidak valid |
+| 403 | Tidak punya hak akses |
+| 404 | Data tidak ditemukan |
+| 409 | Konflik aturan bisnis (misalnya komentar di tiket `closed`) |
+| 422 | Validasi gagal, detail ada di field `errors` |
+| 429 | Terlalu banyak percobaan login |
+
+### Contoh
+
+```bash
+# login
+curl -X POST http://localhost:8000/api/v1/auth/login \
+  -H "Accept: application/json" -H "Content-Type: application/json" \
+  -d '{"email":"user@demo.test","password":"password"}'
+
+# buat tiket
+curl -X POST http://localhost:8000/api/v1/tickets \
+  -H "Accept: application/json" -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{"title":"Tidak bisa login","description":"Muncul error 500.","category_id":1,"priority":"high"}'
+```
+
+## Alur status tiket
+
+```mermaid
+stateDiagram-v2
+    [*] --> open
+    open --> in_progress
+    in_progress --> resolved
+    resolved --> closed
+    resolved --> in_progress
+```
+
+## Skema database
+
+```mermaid
+erDiagram
+    users ||--o{ tickets : "membuat (created_by)"
+    users ||--o{ tickets : "menangani (assigned_to)"
+    categories ||--o{ tickets : "mengelompokkan"
+    tickets ||--o{ comments : "memiliki"
+    tickets ||--o{ attachments : "memiliki"
+    tickets ||--o{ ticket_histories : "mencatat"
+    users ||--o{ comments : "menulis"
+    users ||--o{ attachments : "mengunggah"
+    users ||--o{ ticket_histories : "mengubah status"
+```
+
+## Menjalankan test
+
+```bash
+php artisan test
+```
+
+## Keputusan desain
+
+- **Policy per resource**: aturan akses ada di satu tempat, dipakai ulang oleh FormRequest dan controller.
+- **Eager loading** pada daftar tiket untuk mencegah masalah N+1.
+- **Transaksi database** saat mengubah status, agar tiket dan riwayatnya selalu konsisten.
+- **Notifikasi via queue**, dikirim setelah transaksi selesai, sehingga request tidak melambat dan data sudah tersimpan saat email diproses.
+- **Lampiran di storage privat**, diunduh lewat endpoint yang memeriksa hak akses.
+
+## Lisensi
+
+MIT
