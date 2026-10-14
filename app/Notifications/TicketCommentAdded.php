@@ -21,8 +21,7 @@ class TicketCommentAdded extends Notification implements ShouldQueue
         public Ticket $ticket,
         public Comment $comment,
         public User $author,
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {
@@ -35,7 +34,7 @@ class TicketCommentAdded extends Notification implements ShouldQueue
             ->subject("[{$this->ticket->code}] Komentar baru pada tiket")
             ->greeting("Halo, {$notifiable->name}!")
             ->line("{$this->author->name} menulis komentar pada tiket \"{$this->ticket->title}\":")
-            ->line('"' . Str::limit($this->comment->body, 200) . '"')
-            ->action('Balas komentar', config('app.frontend_url') . "/tickets/{$this->ticket->id}");
+            ->line('"'.Str::limit($this->comment->body, 200).'"')
+            ->action('Balas komentar', config('app.frontend_url')."/tickets/{$this->ticket->id}");
     }
 }

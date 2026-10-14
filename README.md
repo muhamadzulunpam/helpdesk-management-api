@@ -1,5 +1,7 @@
 # Helpdesk API
 
+[![Tests](https://github.com/muhamadzulunpam/helpdesk-management-api/actions/workflows/tests.yml/badge.svg)](https://github.com/muhamadzulunpam/helpdesk-management-api/actions/workflows/tests.yml)
+
 REST API sistem tiket bantuan (helpdesk) dengan tiga peran pengguna: **admin**, **agent**, dan **user**. Dibuat dengan Laravel, Sanctum, dan Pest.
 
 > Frontend: [helpdesk-web](https://github.com/muhamadzulunpam/helpdesk-web) (segera hadir) · Demo: _segera hadir_

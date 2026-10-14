@@ -20,8 +20,7 @@ class TicketStatusChanged extends Notification implements ShouldQueue
         public Ticket $ticket,
         public TicketStatus $from,
         public TicketStatus $to,
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {
@@ -34,7 +33,7 @@ class TicketStatusChanged extends Notification implements ShouldQueue
             ->subject("[{$this->ticket->code}] Status tiketmu diperbarui")
             ->greeting("Halo, {$notifiable->name}!")
             ->line("Status tiket \"{$this->ticket->title}\" berubah dari {$this->from->label()} menjadi {$this->to->label()}.")
-            ->action('Lihat tiket', config('app.frontend_url') . "/tickets/{$this->ticket->id}")
+            ->action('Lihat tiket', config('app.frontend_url')."/tickets/{$this->ticket->id}")
             ->line('Terima kasih telah menggunakan layanan helpdesk kami.');
     }
 }

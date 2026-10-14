@@ -28,7 +28,7 @@ enum TicketStatus: string
         return in_array($next, $this->allowedTransitions(), true);
     }
 
-        /**
+    /**
      * Nama status yang ramah dibaca, dipakai di email.
      */
     public function label(): string

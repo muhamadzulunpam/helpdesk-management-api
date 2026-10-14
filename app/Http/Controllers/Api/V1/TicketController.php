@@ -11,6 +11,8 @@ use App\Http\Resources\TicketResource;
 use App\Models\Ticket;
 use App\Models\TicketHistory;
 use App\Models\User;
+use App\Notifications\TicketAssigned;
+use App\Notifications\TicketStatusChanged;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -18,8 +20,6 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
-use App\Notifications\TicketAssigned;
-use App\Notifications\TicketStatusChanged;
 
 class TicketController extends Controller
 {
