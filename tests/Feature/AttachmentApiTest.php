@@ -23,7 +23,7 @@ function buatTiketLampiran(User $pemilik, array $attrs = []): Ticket
 
 function buatLampiran(Ticket $tiket, User $pengunggah, array $attrs = []): Attachment
 {
-    $path = "tickets/{$tiket->id}/" . uniqid() . '.txt';
+    $path = "tickets/{$tiket->id}/".uniqid().'.txt';
     Storage::disk('local')->put($path, 'isi berkas');
 
     return Attachment::create(array_merge([

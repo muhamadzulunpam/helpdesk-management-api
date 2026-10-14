@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Ticket extends Model
 {
@@ -30,7 +31,7 @@ class Ticket extends Model
         'status' => 'open',
         'priority' => 'medium',
     ];
-    
+
     protected $casts = [
         'status' => TicketStatus::class,
         'priority' => TicketPriority::class,
@@ -42,7 +43,7 @@ class Ticket extends Model
         // Generate kode tiket otomatis, contoh: TKT-20261012-A1B2C3
         static::creating(function (Ticket $ticket) {
             if (empty($ticket->code)) {
-                $ticket->code = 'TKT-' . now()->format('Ymd') . '-' . strtoupper(\Illuminate\Support\Str::random(6));
+                $ticket->code = 'TKT-'.now()->format('Ymd').'-'.strtoupper(Str::random(6));
             }
         });
     }
@@ -92,7 +93,8 @@ class Ticket extends Model
                 });
             });
     }
-        /**
+
+    /**
      * Batasi query hanya ke tiket yang boleh dilihat oleh user ini.
      */
     public function scopeVisibleTo(Builder $query, User $user): Builder

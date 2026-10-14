@@ -18,8 +18,7 @@ class TicketAssigned extends Notification implements ShouldQueue
     public function __construct(
         public Ticket $ticket,
         public User $assignedBy,
-    ) {
-    }
+    ) {}
 
     public function via(object $notifiable): array
     {
@@ -33,6 +32,6 @@ class TicketAssigned extends Notification implements ShouldQueue
             ->greeting("Halo, {$notifiable->name}!")
             ->line("{$this->assignedBy->name} menugaskan tiket \"{$this->ticket->title}\" kepadamu.")
             ->line("Prioritas: {$this->ticket->priority->value}")
-            ->action('Buka tiket', config('app.frontend_url') . "/tickets/{$this->ticket->id}");
+            ->action('Buka tiket', config('app.frontend_url')."/tickets/{$this->ticket->id}");
     }
 }
